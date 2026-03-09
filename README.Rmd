@@ -4,7 +4,6 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit the README.Rmd file -->
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -13,7 +12,129 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Follow the instructions posted at https://ds202-at-isu.github.io/labs.html for the lab assignment. The work is meant to be finished during the lab time, but you have time until Monday evening to polish things.
 
-Include your answers in this document (Rmd file). Make sure that it knits properly (into the md file). Upload both the Rmd and the md file to your repository.  
+Include your answers in this document (Rmd file). Make sure that it knits properly (into the md file). Upload both the Rmd and the md file to your repository.
 
 All submissions to the github repo will be automatically uploaded for grading once the due date is passed.
 Submit a link to your repository on Canvas (only one submission per team) to signal to the instructors that you are done with your submission.
+
+# Data Analysis
+
+As a team, we found that the data set contains 16 columns and 6,935 rows of data. It contains information on houses sold in Ames from 07-03-2017 to 08-31-2022.
+
+The dataset contains 16 variables:
+
+- **Parcel ID**: categorical — unique identifier for each property
+- **Address**: categorical — street address of the property
+- **Style**: categorical — architectural style of the home (12 types)
+- **Occupancy**: categorical — type of occupancy (5 types)
+- **Sale Date**: categorical — date the property was sold
+- **Sale Price**: numeric — sale price in dollars
+- **Multi Sale**: categorical — indicates if part of a multi-property transaction
+- **YearBuilt**: numeric — year the home was constructed
+- **Acres**: numeric — lot size in acres
+- **TotalLivingArea (sf)**: numeric — total finished living area in square feet
+- **Bedrooms**: numeric — number of bedrooms
+- **FinishedBsmtArea (sf)**: numeric — finished basement area in square feet
+- **LotArea (sf)**: numeric — lot size in square feet
+- **AC**: categorical — whether the home has air conditioning (Yes/No)
+- **FirePlace**: categorical — whether the home has a fireplace (Yes/No)
+- **Neighborhood**: categorical — neighborhood in Ames (42 types)
+
+```{r}
+library(tidyverse)
+library(classdata)
+library(dplyr)
+library(ggplot2)
+str(ames)
+glimpse(ames)
+summary(ames)
+```
+
+# Main Focus
+
+As a team, we found that the sale price of the houses is the most interesting variable to focus on. This will be the main variable.
+
+Since there are 2206 houses with a sale price of 0, almost a third of them, we can assume that a sale price of 0 means the house is not sold.
+
+```{r}
+sum(ames$`Sale Price` == 0)
+```
+
+As a team, we found that to focus on only houses that have sold, we will filter out houses with a sale price of 0. We will then create a histogram to see the distribution of house prices.
+
+```{r}
+sales = filter(ames, `Sale Price` > 0)
+
+ggplot(data = sales, aes(x = `Sale Price`)) + geom_histogram(fill = "blue", bins = 5)
+```
+
+As a team, we found that the histogram is severely right skewed by the more expensive homes in the 1.5 to 2 million dollar range. The majority of homes are between 1 and 250,000 dollars. We will filter out the expensive homes to analyze the majority.
+
+```{r}
+typical_sales <- filter(sales, `Sale Price` < 1500000)
+
+ggplot(data = typical_sales, aes(x = `Sale Price`)) + geom_histogram(fill = "green", bins = 10)
+```
+
+As a team, we found that from the second histogram, most homes sold are in the range of 200,000 - 400,000.
+
+# Living Area by Price
+
+As a team, we found that analyzing the living area of the homes may reveal a relationship between it and sale price.
+
+Since a home cannot have a living area of 0, we will filter them out as well as any null values.
+
+```{r}
+typical_sales <- filter(typical_sales, `TotalLivingArea (sf)` > 0)
+typical_sales <- filter(typical_sales, !is.na(`TotalLivingArea (sf)`))
+```
+
+Next, we will plot a histogram of the total living areas.
+
+```{r}
+ggplot(data = ames, aes(x = `TotalLivingArea (sf)`)) + geom_histogram(fill="red", bins=30)
+```
+
+As a team, we found that this histogram shows a similar distribution as price, where the data is right skewed by the larger numbers.
+
+We will check the distribution of total living area for houses under 1.5 million as well.
+
+```{r}
+ggplot(data = typical_sales, aes(x = `TotalLivingArea (sf)`)) + geom_histogram(fill="red", bins=30)
+```
+
+As a team, we found that this histogram shows a distribution pattern almost identical to the price histogram referencing the same data. We will now check the correlation coefficient between the two variables. First, we will remove null values.
+
+```{r}
+typical_sales <- typical_sales %>% drop_na(`Sale Price`, `TotalLivingArea (sf)`)
+```
+
+Then, find the correlation.
+
+```{r}
+cor(typical_sales$`Sale Price`, typical_sales$`TotalLivingArea (sf)`)
+```
+
+As a team, we found that the correlation coefficient between sale price and total living area is 0.31, indicating a positive weak correlation. This is most probably explained by the skewedness of the data. As price increases, there are less houses and therefore less data to draw an accurate conclusion.
+
+We will now plot the variables to visualize this.
+
+```{r}
+ggplot(data = typical_sales) + 
+  geom_point(aes(y = `Sale Price`, x = `TotalLivingArea (sf)`, color = `Occupancy`))
+```
+
+As a team, we found that from the graph, there is a slight increase in sale price as total living area increases.
+
+# Individual Contributions
+
+Ishan's work:
+
+- Inspected and described all 16 variables in the dataset
+- Identified Sale Price as the main variable of interest
+- Discovered and investigated the oddity of 2,206 homes with a sale price of 0
+- Filtered the data to focus on sold homes and typical sales under $1,500,000
+- Created histograms for Sale Price and TotalLivingArea distributions
+- Filtered out invalid living area values (0 and NA)
+- Computed the correlation coefficient between Sale Price and TotalLivingArea
+- Created a colored scatterplot to visualize the relationship between the two variables
