@@ -15,7 +15,9 @@ to your repository.
 All submissions to the github repo will be automatically uploaded for
 grading once the due date is passed. Submit a link to your repository on
 Canvas (only one submission per team) to signal to the instructors that
-you are done with your submission. \##TL:DR
+you are done with your submission.
+
+## TL:DR
 
 Filtered and cleaned the dataset, identified Sale Price as the main
 variable, and found that most homes sell between \$200K–\$400K. Living
